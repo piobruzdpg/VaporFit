@@ -19,9 +19,10 @@ You are welcome to send us any comments or suggestions at *piotr.bruzdziak@pg.ed
 - Python 3.11 source file
 - Compiled versions of the software for macOS (M4) and Windows 11 (both built with Nuitka; may be flagged as unsafe by Windows 11)  
   - If you encounter issues with the compiled version, run the Python script in your favorite Python IDE (NumPy, SciPy, and Matplotlib are required)
-- Two sample data sets:  
+- Three sample data sets:  
   - **test_data_betaine_set.zip**: Contains 29 spectra of glycine betaine solutions and 2 atmospheric spectra  
   - **test_data_D2O-H2O_set.zip**: Contains 11 spectra of D₂O/H₂O mixtures and 3 atmospheric spectra
+  - **test_data_urea_evaporation_set.zip**: Contains 20 spectra of evaporating urea solution and 2 atmospheric spectra
 - User Guide
 
 ## **Features:**
