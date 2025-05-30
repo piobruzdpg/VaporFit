@@ -3,7 +3,7 @@
 ## **Description:**
 
 VaporFit is an open-source software tool designed for automated atmospheric correction in FTIR spectroscopy.  
-The program uses a least squares fitting method, dynamically adjusting subtraction coefficients to improve correction accuracy.  
+The program uses a least squares fitting method, dynamically adjusting subtraction coefficients to improve correction accuracy.  https://github.com/piobruzdpg/VaporFit/blob/main/README.md
 VaporFit is available in compiled versions for macOS (M4) and Windows 11.
 
 ## **Authors:**
@@ -36,8 +36,10 @@ You are welcome to send us any comments or suggestions at *piotr.bruzdziak@pg.ed
 
 If you use VaporFit in your research, you must cite the following publications:
 
+- Pastwa P., Bruzdziak P., *VaporFit: An Open-Source Software for Accurate Atmospheric Correction of FTIR Spectra*,
+  *Physical Chemistry Chemical Physics*, 2025, 
+  doi:[10.1039/D5CP01007A](https://doi.org/10.1039/D5CP01007A)
+
 - Bruzdziak P., *Vapor correction of FTIR spectra – A simple automatic least squares approach*,  
   *Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy*, 2019, **223**, 1–4,  
   doi:[10.1016/j.saa.2019.117373](https://doi.org/10.1016/j.saa.2019.117373)
-
-- Pastwa P., Bruzdziak P., *VaporFit: An Open-Source Software for Accurate Atmospheric Correction of FTIR Spectra*, *in preparation*
