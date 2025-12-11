@@ -35,7 +35,12 @@ from scipy.signal import savgol_filter as savitzky_golay
 from scipy.optimize import least_squares as leastsq
 from scipy.linalg import svd
 
-
+# Próba importu lokalnego pliku spc.py
+try:
+    import spc
+    SPC_AVAILABLE = True
+except ImportError:
+    SPC_AVAILABLE = False
 
 #############################################  Initialize global variables #############################################
 file_paths, atm_file_paths, wavenb, spectrum_data, atmosphere_data, residue_data = None, None, None, None, None, None
@@ -121,15 +126,70 @@ class ToolTip:
 
 ############################################# File operations ##########################################################
 def load_files(atm=False):
-    """This function loads spectrum files (CSV, DPT) and returns the wavenumbers and spectra.
-    It also updates the global variables related to loaded spectra and atmospheric data."""
+    """This function loads spectrum files (CSV, DPT, SPC) and returns the wavenumbers and spectra.
+    It handles SPC files using the local spc.py module if available."""
     global atm_load, spectra_load, atmosphere_data, spectrum_data
-    file_paths = tk.filedialog.askopenfilenames(filetypes=[("Data files", "*.csv *.dpt")])
-    if file_paths:
+
+    # Definicja typów plików
+    file_types = [
+        ("Data files", "*.csv *.dpt *.spc"),
+        ("CSV/DPT files", "*.csv *.dpt"),
+        ("SPC files", "*.spc")
+    ]
+
+    file_paths_selected = tk.filedialog.askopenfilenames(filetypes=file_types)
+    
+    if file_paths_selected:
         try:
-            data_arrays = [np.loadtxt(file, delimiter=",") for file in file_paths]  # Load CSV files as NumPy arrays
-            wavenb = data_arrays[0][:, 0]  # First column from the first file
-            spectra = np.column_stack([data[:, 1] for data in data_arrays])  # Second column from each file, stacked
+            loaded_wavenumbers = []
+            loaded_spectra = []
+            
+            # Pierwszy plik posłuży jako wzorzec osi X
+            reference_x = None
+
+            for file_path in file_paths_selected:
+                ext = os.path.splitext(file_path)[1].lower()
+                
+                # --- OBSŁUGA PLIKÓW SPC ---
+                if ext == '.spc':
+                    if not SPC_AVAILABLE:
+                        tk.messagebox.showerror("Error", "SPC module not found.\nPlease download 'spc.py' and place it in the script folder.")
+                        return None, None, None
+                    
+                    try:
+                        f = spc.File(file_path)
+                        # Sprawdzenie czy plik zawiera dane (f.x - oś falowa, f.sub[0].y - absorbancja)
+                        if hasattr(f, 'x') and len(f.sub) > 0:
+                            x_vals = f.x
+                            y_vals = f.sub[0].y # Pobieramy pierwsze pod-widmo (zgodnie z założeniem pojedynczych widm)
+                        else:
+                            raise ValueError("Invalid SPC file structure")
+                    except Exception as e:
+                         tk.messagebox.showerror("Error", f"Failed to read SPC file: {os.path.basename(file_path)}\n{str(e)}")
+                         return None, None, None
+
+                # --- OBSŁUGA PLIKÓW CSV/DPT ---
+                else:
+                    data = np.loadtxt(file_path, delimiter=",")
+                    x_vals = data[:, 0]
+                    y_vals = data[:, 1]
+
+                # --- WALIDACJA SPÓJNOŚCI OSI X ---
+                if reference_x is None:
+                    reference_x = x_vals
+                else:
+                    # Sprawdź czy długość i zakres się zgadzają (zgrubnie)
+                    if len(x_vals) != len(reference_x) or not np.allclose(x_vals, reference_x, atol=1e-2):
+                        tk.messagebox.showerror("Error", f"Wavenumber mismatch in file: {os.path.basename(file_path)}\nAll spectra must have identical resolution and range.")
+                        return None, None, None
+
+                loaded_spectra.append(y_vals)
+
+            # Konwersja list do numpy arrays
+            wavenb = reference_x
+            spectra = np.column_stack(loaded_spectra)
+
+            # --- LOGIKA AKTUALIZACJI ZMIENNYCH GLOBALNYCH (Bez zmian) ---
             if not atm:
                 if atm_load:
                     plot_spectral_data(wavenb, None , spectra, atmosphere_data)
@@ -142,7 +202,9 @@ def load_files(atm=False):
                 else:
                     plot_spectral_data(wavenb, None, None, spectra)
                 atm_load = True
-            return wavenb, spectra, file_paths
+            
+            return wavenb, spectra, file_paths_selected
+
         except Exception as e:
             tk.messagebox.showerror("Error", f"Error loading files: {str(e)}")
     return None, None, None
